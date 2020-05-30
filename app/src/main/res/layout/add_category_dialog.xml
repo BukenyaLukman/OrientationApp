@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/category_image"
+        android:layout_width="85dp"
+        android:layout_height="85dp"
+        app:civ_border_width="2dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="16dp"
+        app:civ_border_color="@android:color/darker_gray"
+        android:src="@drawable/placeholder"
+        android:scaleType="centerCrop">
+
+    </de.hdodenhof.circleimageview.CircleImageView>
+
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tap above to select image"
+        android:gravity="center"/>
+    <EditText
+        android:id="@+id/category_questions_expected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_margin="16dp"
+        android:backgroundTint="@android:color/white"
+        android:inputType="number"
+        android:elevation="1dp"
+        android:hint="Number of Questions"
+        android:background="@drawable/rounded_box"
+        android:padding="8dp"/>
+
+    <EditText
+        android:id="@+id/category_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_margin="16dp"
+        android:backgroundTint="@android:color/white"
+        android:inputType="textPersonName"
+        android:elevation="1dp"
+        android:hint="Category Name"
+        android:background="@drawable/rounded_box"
+        android:padding="8dp"/>
+
+    <Button
+        android:id="@+id/category_add"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="Add"
+        android:background="@drawable/rounded_corners"
+        android:textColor="@android:color/white"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp"/>
+
+</LinearLayout>

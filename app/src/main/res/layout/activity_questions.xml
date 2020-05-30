@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".QuestionsActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar_questions"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        app:titleTextColor="@android:color/white"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"
+        android:elevation="3dp">
+    </androidx.appcompat.widget.Toolbar>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:background="@android:color/white"
+        android:elevation="3dp">
+        <Button
+            android:id="@+id/add_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="Add"
+            android:layout_weight="1"
+            android:textColor="@android:color/white"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@android:color/darker_gray"
+            android:layout_margin="8dp"
+            />
+        <Button
+            android:id="@+id/excel_btn"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:text="Excel"
+            android:textColor="@android:color/white"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:layout_margin="8dp"
+            />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/question_recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </androidx.recyclerview.widget.RecyclerView>
+
+</LinearLayout>
