@@ -1,5 +1,6 @@
 package com.example.orientationadmin;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +13,11 @@ import java.util.List;
 
 public class QuestionsAdapter extends RecyclerView.Adapter<QuestionsAdapter.ViewHolder>{
     private List<QuestionModel> list;
+    private String category;
 
-    public QuestionsAdapter(List<QuestionModel> list) {
+    public QuestionsAdapter(List<QuestionModel> list, String category) {
         this.list = list;
+        this.category = category;
     }
 
     @NonNull
@@ -47,9 +50,19 @@ public class QuestionsAdapter extends RecyclerView.Adapter<QuestionsAdapter.View
 
         }
 
-        private void setData(String question, String answer, int position){
+        private void setData(String question, String answer, final int position){
             this.question.setText(position+1+". "+question);
             this.answer.setText("Ans "+" "+answer);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent editIntent = new Intent(itemView.getContext(), AddQuestionActivity.class);
+                    editIntent.putExtra("categoryName",category);
+                    editIntent.putExtra("position",position);
+                    itemView.getContext().startActivity(editIntent);
+                }
+            });
 
         }
     }

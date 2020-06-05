@@ -56,7 +56,7 @@ public class QuestionsActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         list = new ArrayList<>();
-        adapter = new QuestionsAdapter(list);
+        adapter = new QuestionsAdapter(list,CategoryName);
         recyclerView.setAdapter(adapter);
         getData(CategoryName);
 

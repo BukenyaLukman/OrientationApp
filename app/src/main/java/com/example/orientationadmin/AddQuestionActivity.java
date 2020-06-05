@@ -28,7 +28,9 @@ public class AddQuestionActivity extends AppCompatActivity {
     private Button uploadBtn;
     private String CategoryName;
     private ProgressDialog loadingBar;
-
+    private QuestionModel questionModel;
+    private int position;
+    private String id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,11 +42,17 @@ public class AddQuestionActivity extends AppCompatActivity {
         uploadBtn = findViewById(R.id.upload_btn);
 
 
-
         loadingBar = new ProgressDialog(this);
         loadingBar.setMessage("Please wait...");
         loadingBar.setCanceledOnTouchOutside(false);
         CategoryName = getIntent().getStringExtra("categoryName");
+        position = getIntent().getIntExtra("position",-1);
+
+        if(position != -1){
+            questionModel = QuestionsActivity.list.get(position);
+          setData();
+        }
+
         uploadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,6 +64,8 @@ public class AddQuestionActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private void upload(){
         loadingBar.show();
@@ -87,7 +97,11 @@ public class AddQuestionActivity extends AppCompatActivity {
         map.put("optionA",((EditText)answers.getChildAt(0)).getText().toString());
         map.put("question",question.getText().toString());
         //map.put("setNo",);
-        final String id = UUID.randomUUID().toString();
+        if(position != -1){
+            id = questionModel.getId();
+        }else {
+            id = UUID.randomUUID().toString();
+        }
         loadingBar.show();
         FirebaseDatabase.getInstance().getReference()
                 .child("SETS").child(CategoryName).child("questions")
@@ -96,9 +110,14 @@ public class AddQuestionActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
+
                     QuestionModel questionModel = new QuestionModel(id,map.get("question").toString(),
                             map.get("optionA").toString(),map.get("optionB").toString(),map.get("optionC").toString(),map.get("optionD").toString(),map.get("correctAns").toString());
-                    QuestionsActivity.list.add(questionModel);
+                    if(position != -1){
+                        QuestionsActivity.list.set(position,questionModel);
+                    }else {
+                        QuestionsActivity.list.add(questionModel);
+                    }
                     finish();
 
 
@@ -108,6 +127,23 @@ public class AddQuestionActivity extends AppCompatActivity {
                 loadingBar.dismiss();
             }
         });
+    }
+
+    private void setData() {
+        question.setText(questionModel.getQuestion());
+        ((EditText)answers.getChildAt(0)).setText(questionModel.getA());
+        ((EditText)answers.getChildAt(1)).setText(questionModel.getB());
+        ((EditText)answers.getChildAt(2)).setText(questionModel.getC());
+        ((EditText)answers.getChildAt(3)).setText(questionModel.getD());
+
+        for(int i = 0; i < answers.getChildCount(); i++){
+            if(((EditText)answers.getChildAt(i)).getText().equals(questionModel.getAnswer())){
+                RadioButton radioButton = (RadioButton)options.getChildAt(i);
+                radioButton.setChecked(true);
+                break;
+            }
+        }
+
     }
 
 }
