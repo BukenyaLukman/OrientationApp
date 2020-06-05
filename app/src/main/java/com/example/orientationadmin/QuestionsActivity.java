@@ -28,7 +28,7 @@ public class QuestionsActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private Toolbar toolbar;
     private QuestionsAdapter adapter;
-    private List<QuestionModel> list;
+    public static List<QuestionModel> list;
     private ProgressDialog loadingBar;
 
     @Override
@@ -115,5 +115,11 @@ public class QuestionsActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        adapter.notifyDataSetChanged();
     }
 }
