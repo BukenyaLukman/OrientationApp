@@ -14,10 +14,12 @@ import java.util.List;
 public class QuestionsAdapter extends RecyclerView.Adapter<QuestionsAdapter.ViewHolder>{
     private List<QuestionModel> list;
     private String category;
+    private DeleteListener listener;
 
-    public QuestionsAdapter(List<QuestionModel> list, String category) {
+    public QuestionsAdapter(List<QuestionModel> list, String category, DeleteListener listener) {
         this.list = list;
         this.category = category;
+        this.listener = listener;
     }
 
     @NonNull
@@ -63,7 +65,19 @@ public class QuestionsAdapter extends RecyclerView.Adapter<QuestionsAdapter.View
                     itemView.getContext().startActivity(editIntent);
                 }
             });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    listener.onLongClick(position,list.get(position).getId());
+                    return false;
+
+                }
+            });
 
         }
+    }
+    public interface DeleteListener{
+
+        void onLongClick(int position, String Id);
     }
 }

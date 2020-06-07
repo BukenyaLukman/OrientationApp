@@ -128,7 +128,7 @@ public class CategoryActivity extends AppCompatActivity {
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if(task.isSuccessful()){
                                                     list.remove(position);
-                                                    adapter.notifyDataSetChanged();
+                                                    adapter.notifyItemRemoved(position);
                                                     loadingBar.dismiss();
                                                 }else{
                                                     String message = task.getException().toString();

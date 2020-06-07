@@ -2,9 +2,11 @@ package com.example.orientationadmin;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,11 +32,19 @@ public class AddQuestionActivity extends AppCompatActivity {
     private ProgressDialog loadingBar;
     private QuestionModel questionModel;
     private int position;
+    private Toolbar toolbar;
     private String id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_question);
+
+        toolbar = findViewById(R.id.add_questions_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Add Question");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
 
         question = findViewById(R.id.question);
         options = findViewById(R.id.options);
@@ -66,6 +76,16 @@ public class AddQuestionActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home){
+            finish();
+
+        }
+
+        return super.onOptionsItemSelected(item);
+
+    }
 
     private void upload(){
         loadingBar.show();
@@ -129,6 +149,7 @@ public class AddQuestionActivity extends AppCompatActivity {
         });
     }
 
+
     private void setData() {
         question.setText(questionModel.getQuestion());
         ((EditText)answers.getChildAt(0)).setText(questionModel.getA());
@@ -136,14 +157,19 @@ public class AddQuestionActivity extends AppCompatActivity {
         ((EditText)answers.getChildAt(2)).setText(questionModel.getC());
         ((EditText)answers.getChildAt(3)).setText(questionModel.getD());
 
+
         for(int i = 0; i < answers.getChildCount(); i++){
-            if(((EditText)answers.getChildAt(i)).getText().equals(questionModel.getAnswer())){
+
+            if(((EditText)answers.getChildAt(i)).getText().toString().equals(questionModel.getAnswer())){
+
                 RadioButton radioButton = (RadioButton)options.getChildAt(i);
                 radioButton.setChecked(true);
                 break;
+
             }
         }
 
     }
+
 
 }
