@@ -34,6 +34,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth:19.3.1'
     implementation 'com.firebaseui:firebase-ui-database:3.2.2'
     implementation 'com.github.bumptech.glide:glide:4.10.0'
+    implementation files('libs/poi-3.12-android-a.jar')
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
     implementation 'de.hdodenhof:circleimageview:3.0.1'
     implementation 'com.google.code.gson:gson:2.8.6'

@@ -10,14 +10,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -28,9 +33,21 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.UUID;
 
 public class QuestionsActivity extends AppCompatActivity {
     private Button add,excel;
@@ -40,6 +57,11 @@ public class QuestionsActivity extends AppCompatActivity {
     public static List<QuestionModel> list;
     private ProgressDialog loadingBar;
     private DatabaseReference myRef;
+    public static final int CELL_COUNT = 6;
+    private String CategoryName;
+    private TextView loadingText;
+    private Dialog loadingDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +74,21 @@ public class QuestionsActivity extends AppCompatActivity {
 
         toolbar = findViewById(R.id.toolbar_questions);
         setSupportActionBar(toolbar);
-        final String CategoryName = getIntent().getStringExtra("category");
+        CategoryName = getIntent().getStringExtra("category");
         getSupportActionBar().setTitle(CategoryName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         loadingBar = new ProgressDialog(this);
 
+
+        loadingDialog = new Dialog(this);
+        loadingDialog.setContentView(R.layout.loading);
+        loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+        loadingDialog.setCancelable(false);
+
         add = findViewById(R.id.add_btn);
         excel = findViewById(R.id.excel_btn);
+        loadingText = loadingDialog.findViewById(R.id.textview3);
         recyclerView = findViewById(R.id.question_recyclerView);
 
 
@@ -168,12 +197,169 @@ public class QuestionsActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK){
                 String filePath = data.getData().getPath();
                 if(filePath.endsWith("xlsx")){
-                    Toast.makeText(this, "File Selected", Toast.LENGTH_SHORT).show();
+                    readFile(data.getData());
+
                 }else{
                     Toast.makeText(this, "Please choose an Excel File", Toast.LENGTH_SHORT).show();
 
                 }
             }
+        }
+    }
+
+    private void readFile(final Uri fileUri) {
+
+        loadingText.setText("Scanning Questions...");
+        loadingDialog.show();
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+
+                final HashMap<String,Object> parentMap = new HashMap<>();
+                final List<QuestionModel> tempList = new ArrayList<>();
+
+                try {
+
+                    InputStream inputStream = getContentResolver().openInputStream(fileUri);
+                    XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+                    XSSFSheet sheet = workbook.getSheetAt(0);
+                    FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+
+                    int rowsCount = sheet.getPhysicalNumberOfRows();
+
+                    if(rowsCount > 0){
+                        for(int r = 0; r < rowsCount; r++){
+                            Row row = sheet.getRow(r);
+                            if(row.getPhysicalNumberOfCells() == CELL_COUNT){
+                                String question = getCellData(row,0,formulaEvaluator);
+                                String A = getCellData(row,1,formulaEvaluator);
+                                String B = getCellData(row,2,formulaEvaluator);
+                                String C = getCellData(row,3,formulaEvaluator);
+                                String D = getCellData(row,4,formulaEvaluator);
+                                String correctAns = getCellData(row,5,formulaEvaluator);
+                                if(correctAns.equals(A) || correctAns.equals(B) || correctAns.equals(C) || correctAns.equals(D)){
+                                    HashMap<String, String> questionMap = new HashMap<>();
+                                    questionMap.put("question",question);
+                                    questionMap.put("optionA",A);
+                                    questionMap.put("optionB",B);
+                                    questionMap.put("optionC",C);
+                                    questionMap.put("optionD",D);
+                                    questionMap.put("correctAns",correctAns);
+
+                                    String Id = UUID.randomUUID().toString();
+                                    parentMap.put(Id,questionMap);
+                                    tempList.add(new QuestionModel(Id,question,A,B,C,D,correctAns));
+
+
+                                }else{
+                                    final int finalR = r;
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            loadingText.setText("Loading...");
+                                            loadingDialog.dismiss();
+                                            Toast.makeText(QuestionsActivity.this, "Row number "+(finalR +1)+" has no correct Option", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                    return;
+                                }
+                            }else{
+                                final int finalR1 = r;
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        loadingText.setText("Loading...");
+                                        loadingDialog.dismiss();
+                                        Toast.makeText(QuestionsActivity.this, "Row number "+(finalR1 +1)+" has incorrect data", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                return;
+                            }
+
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                loadingText.setText("Uploading..");
+
+                                FirebaseDatabase.getInstance().getReference()
+                                        .child("SETS").child(CategoryName)
+                                        .child("questions").updateChildren(parentMap)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                if(task.isSuccessful()){
+                                                    list.addAll(tempList);
+                                                    adapter.notifyDataSetChanged();
+                                                    loadingDialog.dismiss();
+                                                }else{
+                                                    loadingText.setText("Loading...");
+                                                    loadingDialog.dismiss();
+                                                    Toast.makeText(QuestionsActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
+                                                    return;
+                                                }
+                                            }
+                                        });
+                            }
+                        });
+
+
+                    }else{
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                loadingText.setText("Loading...");
+                                loadingDialog.dismiss();
+                                Toast.makeText(QuestionsActivity.this, "File is Empty", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        return;
+
+                    }
+
+                } catch (final FileNotFoundException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadingText.setText("Loading...");
+                            loadingDialog.dismiss();
+                            Toast.makeText(QuestionsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadingText.setText("Loading...");
+                            loadingDialog.dismiss();
+                            Toast.makeText(QuestionsActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+
+        }
+
+        });
+    }
+
+    private String getCellData(Row row, int cellPosition,FormulaEvaluator formulaEvaluator) {
+        String value = "";
+        Cell cell = row.getCell(cellPosition);
+        switch (cell.getCellType()){
+            case Cell.CELL_TYPE_BOOLEAN:
+                return value+cell.getBooleanCellValue();
+            case Cell.CELL_TYPE_NUMERIC:
+                return value + cell.getNumericCellValue();
+            case Cell.CELL_TYPE_STRING:
+                return value + cell.getStringCellValue();
+            default:
+                return value;
         }
     }
 
