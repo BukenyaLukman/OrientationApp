@@ -303,8 +303,24 @@ public class CategoryActivity extends AppCompatActivity {
         if(item.getItemId() ==R.id.add){
             ///Dialog show
             CategoryDialog.show();
-
             //finish();
+        }
+        if(item.getItemId() == R.id.logout){
+
+            new AlertDialog.Builder(CategoryActivity.this,R.style.Theme_AppCompat_Light_Dialog)
+                    .setTitle("Logout")
+                    .setMessage("Are you sure you want to Logout ?")
+                    .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            FirebaseAuth.getInstance().signOut();
+                            Intent intent = new Intent(CategoryActivity.this,MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }).setNegativeButton("Cancel",null)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
         }
         return super.onOptionsItemSelected(item);
     }
